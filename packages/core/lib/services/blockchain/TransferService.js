@@ -27,6 +27,11 @@ export default class TransferService {
         return this.baseTransfer(params);
     }
 
+    static async [Blockchains.CYBER](params){
+        params.recipient = params.recipient.toLowerCase();
+        return this.baseTransfer(params);
+    }
+
     static async baseTransfer(params){
         let {account, recipient, amount, memo, token } = params;
         const plugin = PluginRepository.plugin(account.blockchain());
