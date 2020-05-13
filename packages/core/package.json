@@ -1,6 +1,6 @@
 {
   "name": "@walletpack/core",
-  "version": "1.0.50",
+  "version": "1.0.51-alpha.6",
   "description": "> TODO: description",
   "author": "GetScatter Ltd. 2019",
   "homepage": "",
@@ -22,7 +22,7 @@
     "qrcode": "^1.4.1",
     "scrypt-async": "^2.0.1"
   },
-  "gitHead": "70bd19f93b503618a79eb519eef082bfc40b16d7",
+  "gitHead": "2761fad9ecfe25382c8877ba19b35721a43ab665",
   "publishConfig": {
     "access": "public"
   }

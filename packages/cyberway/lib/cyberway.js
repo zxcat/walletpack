@@ -52,6 +52,7 @@ const getAccountsFromPublicKey = async (publicKey, network, fallbackToChain = fa
 		if(!accountsFromApi) return getAccountsFromPublicKey(publicKey, network, true);
 		else return accountsFromApi;
 	}
+	alert('getAccountsFromPublicKey fallback', publicKey, network, fallbackToChain);
 	return Promise.race([
 		new Promise(resolve => setTimeout(() => resolve([]), 20000)),
 		new Promise(async (resolve, reject) => {
@@ -108,6 +109,7 @@ export default class CYBER extends Plugin {
 	constructor(){ super(Blockchains.CYBER, PluginTypes.BLOCKCHAIN_SUPPORT); }
 
 	signatureProvider(accounts, reject, prompt = true){
+		console.warn('signatureProvider');
 		const isSingleAccount = accounts instanceof Account;
 		return {
 			getAvailableKeys:async () => isSingleAccount ? [accounts.publicKey] : accounts.map(x => x.publicKey),
@@ -118,6 +120,7 @@ export default class CYBER extends Plugin {
 	}
 
 	getSignableApi(accounts, reject, prompt = true, signatureProvider = null){
+		console.warn('getSignableApi');
 		const isSingleAccount = accounts instanceof Account;
 		const rpc = new JsonRpc((isSingleAccount ? accounts.network() : accounts[0].network()).fullhost());
 		let params = {rpc, signatureProvider:signatureProvider ? signatureProvider : this.signatureProvider(accounts, reject, prompt)};
@@ -140,15 +143,16 @@ export default class CYBER extends Plugin {
 	bustCache(){  }
 	defaultExplorer(){ 		console.warn('defaultExplorer');
 	return EXPLORER; }
-	accountFormatter(account){ 		console.warn('accountFormatter');
+	accountFormatter(account){ 		console.warn('accountFormatter', account);
 	return `${account.name}@${account.authority}` } // TODO: fetch username
-	returnableAccount(account){ 		console.warn('returnableAccount');
+	returnableAccount(account){ 		console.warn('returnableAccount', account);
 	return { name:account.name, authority:account.authority, publicKey:account.publicKey, blockchain:Blockchains.CYBER }}
 
 	contractPlaceholder(){ 		console.warn('contractPlaceholder');
 	return 'cyber.token'; }
 
 	checkNetwork(network){
+		console.warn('checkNetwork', network);
 		return Promise.race([
 			new Promise(resolve => setTimeout(() => resolve(null), 2000)),
 			fetch(`${network.fullhost()}/v1/chain/get_info`).then(() => true).catch(() => false),
@@ -160,10 +164,12 @@ export default class CYBER extends Plugin {
 	}
 
 	isEndorsedNetwork(network){
+		console.warn('isEndorsedNetwork', network);
 		return network.blockchain === Blockchains.CYBER && network.chainId === MAINNET_CHAIN_ID;
 	}
 
 	async getChainId(network){
+		console.warn('getChainId', network);
 		return getChainData(network, 'get_info', {}).then(x => x.chain_id || '').catch(() => '');
 	}
 
@@ -171,6 +177,7 @@ export default class CYBER extends Plugin {
 	hasAccountActions(){ return false; }
 
 	async proxyVote(account, proxyAccount, prompt = false){
+		console.warn('proxyVote', account, proxyAccount, prompt);
 		return alert('not implemented');
 	}
 	// 	return new Promise(async (resolve, reject) => {
@@ -202,6 +209,7 @@ export default class CYBER extends Plugin {
 	// }
 
 	async changePermissions(account, keys){
+		console.warn('changePermissions', account, keys);
 		if(!keys) return;
 		return new Promise(async (resolve, reject) => {
 			const cw = this.getSignableApi(account, reject);
@@ -282,6 +290,7 @@ export default class CYBER extends Plugin {
 	}
 
 	accountActions(account, callback){
+		console.warn('accountActions', account, callback);
 		return [
 			new AccountAction("unlink_account", () => callback(account)),
 			new AccountAction("change_permissions", () => callback(account), true),
@@ -384,6 +393,7 @@ export default class CYBER extends Plugin {
 	accountsAreImported(){ return true; }
 
 	getImportableAccounts(keypair, network){
+		console.warn('getImportableAccounts', keypair, network);
 		return new Promise((resolve, reject) => {
 			let publicKey = keypair.publicKeys.find(x => x.blockchain === Blockchains.CYBER);
 			if(!publicKey) return resolve([]);
@@ -403,7 +413,7 @@ export default class CYBER extends Plugin {
 	isValidRecipient(name){ return /(^[a-z1-5.]{1}([a-z1-5.]{0,10}[a-z1-5])?$)/g.test(name); }
 
 	privateToPublic(privateKey, prefix){ try {
-		.toPublic().toString(prefix));
+		console.log('privateToPublic', privateKey, prefix, ecc.PrivateKey(privateKey).toPublic().toString(prefix));
 		return ecc.PrivateKey(privateKey).toPublic().toString(prefix || KEY_PREFIX);
 	} catch(e) { return console.error(e); } }
 
@@ -439,7 +449,7 @@ export default class CYBER extends Plugin {
 	}
 
 	async accountData(account, network = null, accountName = null){
-		console.warn('accountData');
+		console.warn('accountData', account, network, accountName);
 		const getAccount = () => {
 			return fetch(`${(network || account.network()).fullhost()}/v1/chain/get_account`, {
 				method: 'POST',
@@ -498,14 +508,16 @@ export default class CYBER extends Plugin {
 	// }
 
 	async balanceFor(account, token){
+		console.warn('balanceFor', account, token);
 		const balances = await Promise.race([
 			new Promise(resolve => setTimeout(() => resolve([]), 10000)),
 			getTableRows(account.network(), {
-				json:true,
-				code:token.contract,
-				scope:account.name,
-				table:'accounts',
-				limit:500
+				json: true,
+				code: token.contract,
+				scope: account.name,
+				table: 'accounts',
+				limit: 500,
+				index: 'primary'
 			}).then(res => res.rows).catch(() => [])
 		]);
 
@@ -514,6 +526,7 @@ export default class CYBER extends Plugin {
 	}
 
 	async balancesFor(account, tokens, fallback = false){
+		console.warn('balancesFor', account, tokens, fallback);
 		if(!fallback && await LightAPI.networkString(account.network())){
 			const balances = await LightAPI.balancesFor(account, account.network());
 			if(!balances) return this.balancesFor(account, tokens, true);
@@ -552,10 +565,7 @@ export default class CYBER extends Plugin {
 
 			const keyPath = key => ({
 				threshold: 1,
-				keys: [{
-					key,
-					weight: 1
-				}],
+				keys: [{key, weight: 1}],
 				accounts: [],
 				waits: []
 			});
@@ -567,8 +577,8 @@ export default class CYBER extends Plugin {
 				data:{
 					creator: account.name,
 					name: name,
-					owner:keyPath(owner),
-					active:keyPath(active)
+					owner: keyPath(owner),
+					active: keyPath(active)
 				},
 			}];
 			if (used > 0) {
@@ -666,6 +676,7 @@ export default class CYBER extends Plugin {
 
 
 	async signerWithPopup(payload, accounts, rejector, prompt = true){
+		console.warn('signerWithPopup', payload, accounts, rejector, prompt);
 		return new Promise(async resolve => {
 			if(accounts instanceof Account){
 				accounts = [accounts];
@@ -714,10 +725,10 @@ export default class CYBER extends Plugin {
 	}
 
 	async signer(payload, publicKey, arbitrary = false, isHash = false, privateKey = null){
-		if(!privateKey) privateKey = await KeyPairService.publicToPrivate(publicKey);
+		if (!privateKey) privateKey = await KeyPairService.publicToPrivate(publicKey);
 		if (!privateKey) return;
 
-		if(typeof privateKey !== 'string') privateKey = this.bufferToHexPrivate(privateKey);
+		if (typeof privateKey !== 'string') privateKey = this.bufferToHexPrivate(privateKey);
 
 		if (arbitrary && isHash) return ecc.Signature.signHash(payload.data, privateKey).toString();
 		return ecc.sign(Buffer.from(arbitrary ? payload.data : payload.buf, 'utf8'), privateKey);
@@ -727,6 +738,7 @@ export default class CYBER extends Plugin {
 
 
 	transactionContracts(transaction){
+		console.warn('transactionContracts', transaction);
 		return transaction.hasOwnProperty('actions')
 			? ObjectHelpers.distinct(transaction.actions.map(action => action.account))
 			: ObjectHelpers.distinct(transaction.abis.map(x => {
@@ -736,6 +748,7 @@ export default class CYBER extends Plugin {
 	}
 
 	async fetchAbis(network, contracts, fallbackToChain = false){
+		console.warn('fetchAbis', network, contracts, fallbackToChain);
 		try {
 			return await Promise.all(contracts.map(async account => {
 				const chainAbi = await getChainData(network, `get_raw_abi`, {account_name:account}).catch(() => null).then(x => x.abi);
@@ -751,6 +764,7 @@ export default class CYBER extends Plugin {
 	}
 
 	async parseCwjsRequest(payload, network){
+		console.warn('parseCwjsRequest', payload, network);
 		try {
 			const {transaction} = payload;
 			const api = getCwjsApi();
@@ -783,6 +797,7 @@ export default class CYBER extends Plugin {
 	}
 
 	async parseCwjs2Request(payload, network){
+		console.warn('parseCwjs2Request', payload, network);
 		const {transaction} = payload;
 
 		const api = getCwjsApi();
@@ -812,6 +827,7 @@ export default class CYBER extends Plugin {
 	}
 
 	async requestParser(payload, network){
+		console.warn('requestParser', payload, network);
 		if(payload.transaction.hasOwnProperty('serializedTransaction'))
 			return this.parseCwjs2Request(payload, network);
 		else return this.parseCwjsRequest(payload, network);
