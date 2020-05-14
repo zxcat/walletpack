@@ -1,6 +1,6 @@
 {
   "name": "@walletpack/fio",
-  "version": "0.0.28-alpha.5",
+  "version": "0.0.28-alpha.8",
   "description": "> TODO: description",
   "author": "GetScatter Ltd. 2019",
   "homepage": "",
@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@fioprotocol/fiojs": "^1.0.1",
-    "@walletpack/core": "^1.0.51-alpha.1"
+    "@walletpack/core": "^1.0.51-alpha.9"
   },
   "devDependencies": {
     "@fioprotocol/fiosdk": "latest"
@@ -24,5 +24,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "2761fad9ecfe25382c8877ba19b35721a43ab665"
+  "gitHead": "5b7b3b78008fca13c2ed8496dbf3a44c025581af"
 }

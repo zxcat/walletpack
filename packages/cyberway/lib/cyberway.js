@@ -112,7 +112,7 @@ export default class CYBER extends Plugin {
 		console.warn('signatureProvider');
 		const isSingleAccount = accounts instanceof Account;
 		return {
-			getAvailableKeys:async () => isSingleAccount ? [accounts.publicKey] : accounts.map(x => x.publicKey),
+			getAvailableKeys:async () => (isSingleAccount ? [accounts] : accounts).map(x => x.publicKey),
 			sign:async (transaction) => this.signerWithPopup({ transaction }, accounts, reject, prompt).then(signatures => {
 				return {signatures, serializedTransaction:transaction.serializedTransaction}
 			})
@@ -123,7 +123,7 @@ export default class CYBER extends Plugin {
 		console.warn('getSignableApi');
 		const isSingleAccount = accounts instanceof Account;
 		const rpc = new JsonRpc((isSingleAccount ? accounts.network() : accounts[0].network()).fullhost());
-		let params = {rpc, signatureProvider:signatureProvider ? signatureProvider : this.signatureProvider(accounts, reject, prompt)};
+		let params = {rpc, signatureProvider:signatureProvider || this.signatureProvider(accounts, reject, prompt)};
 		if(TextEncoder) params = Object.assign(rpc, {textEncoder:new TextEncoder(), textDecoder:new TextDecoder()});
 		return new Api(params);
 	}
@@ -141,12 +141,10 @@ export default class CYBER extends Plugin {
 
 	bip(){ console.log('BIP'); return `44'/194'/7'/7/`}
 	bustCache(){  }
-	defaultExplorer(){ 		console.warn('defaultExplorer');
-	return EXPLORER; }
+	defaultExplorer(){ return EXPLORER; }
 	accountFormatter(account){ 		console.warn('accountFormatter', account);
 	return `${account.name}@${account.authority}` } // TODO: fetch username
-	returnableAccount(account){ 		console.warn('returnableAccount', account);
-	return { name:account.name, authority:account.authority, publicKey:account.publicKey, blockchain:Blockchains.CYBER }}
+	returnableAccount(account){ return { name:account.name, authority:account.authority, publicKey:account.publicKey, blockchain:Blockchains.CYBER }}
 
 	contractPlaceholder(){ 		console.warn('contractPlaceholder');
 	return 'cyber.token'; }
@@ -160,7 +158,7 @@ export default class CYBER extends Plugin {
 	}
 
 	getEndorsedNetwork(){
-		return new Network('CyberWay Mainnet', 'https', 'node-cyberway.golos.io', 443, Blockchains.CYBER, MAINNET_CHAIN_ID)
+		return new Network('CyberWay Mainnet', 'https', 'scatter.cyberway.io', 443, Blockchains.CYBER, MAINNET_CHAIN_ID)
 	}
 
 	isEndorsedNetwork(network){
@@ -298,97 +296,6 @@ export default class CYBER extends Plugin {
 			new AccountAction("create_account", () => () => callback(account)),
 		];
 	}
-
-	// async refund(account){
-	// 	return new Promise(async (resolve, reject) => {
-
-	// 		const cw = this.getSignableApi(account, reject);
-
-	// 		await cw.transact({
-	// 			actions:[{
-	// 				account: 'eosio',
-	// 				name:'refund',
-	// 				authorization: [{
-	// 					actor: account.sendable(),
-	// 					permission: account.authority,
-	// 				}],
-	// 				data:{
-	// 					owner: account.name
-	// 				},
-	// 			}]
-	// 		}, {
-	// 			blocksBehind: 3,
-	// 			expireSeconds: 30,
-	// 		})
-	// 			.then(trx => {
-	// 				const history = new HistoricAction(account, 'proxy', trx.transaction_id);
-	// 				StoreService.get().dispatch(StoreActions.DELTA_HISTORY, history);
-	// 				resolve(trx)
-	// 			})
-	// 			.catch(res => {
-	// 				reject({error:parseErrorMessage(res)});
-	// 			})
-	// 	})
-	// }
-
-	// async getResourcesFor(account){
-	// 	const data = await this.accountData(account);
-
-	// 	if(!data || !data.hasOwnProperty('cpu_limit') || !data.cpu_limit.hasOwnProperty('available')) return [];
-
-	// 	let refund;
-	// 	if(data.hasOwnProperty('refund_request') && data.refund_request){
-	// 		const threeDays = (86400*3*1000);
-	// 		const percentage = ((+new Date() - +new Date(data.refund_request.request_time)) * 100) / threeDays;
-	// 		refund = {
-	// 			name:'Refund',
-	// 			text:(new Date((+new Date(data.refund_request.request_time)) + (86400*3*1000))).toLocaleDateString(),
-	// 			percentage,
-	// 			actionable:percentage >= 100,
-	// 			actionText:"Claim Refund",
-	// 		}
-	// 	}
-
-	// 	const actionText = "Manage";
-	// 	const resources = [{
-	// 		name:'CPU',
-	// 		available:data.cpu_limit.available,
-	// 		max:data.cpu_limit.max,
-	// 		percentage:(data.cpu_limit.used * 100) / data.cpu_limit.max,
-	// 		actionable:true,
-	// 		actionText,
-	// 	},{
-	// 		name:'NET',
-	// 		available:data.net_limit.available,
-	// 		max:data.net_limit.max,
-	// 		percentage:(data.net_limit.used * 100) / data.net_limit.max,
-	// 		actionable:true,
-	// 		actionText,
-	// 	},{
-	// 		name:'RAM',
-	// 		available:data.ram_usage,
-	// 		max:data.ram_quota,
-	// 		percentage:(data.ram_usage * 100) / data.ram_quota,
-	// 		actionable:true,
-	// 		actionText,
-	// 	}];
-
-	// 	if(refund) resources.push(refund);
-
-	// 	return resources;
-	// }
-
-	// async needsResources(account){
-	// 	const resources = await this.getResourcesFor(account);
-	// 	if(!resources.length) return false;
-
-	// 	return resources.find(x => x.name === 'CPU').available < 6000;
-	// }
-
-	// async addResources(account){
-	// 	const symbol = account.network().systemToken().symbol;
-	// 	return this.stakeOrUnstake(account, `0.1000 ${symbol}`, `0.0000 ${symbol}`, true, false);
-	// }
 
 	accountsAreImported(){ return true; }
 
@@ -755,7 +662,7 @@ export default class CYBER extends Plugin {
 				if(!chainAbi) return console.error(`Could not fetch ABIs for ${account}`);
 				const rawAbi = numeric.base64ToBinary(chainAbi);
 				const abi = cwjsUtil.rawAbiToJson(rawAbi);
-				return { account, rawAbi, abi};
+				return {account, rawAbi, abi};
 			}));
 		} catch(e){
 			console.error(e);
@@ -763,73 +670,37 @@ export default class CYBER extends Plugin {
 		}
 	}
 
-	async parseCwjsRequest(payload, network){
-		console.warn('parseCwjsRequest', payload, network);
+	async requestParser(payload, network){
+		console.warn('requestParser', payload, network);
 		try {
 			const {transaction} = payload;
 			const api = getCwjsApi();
-
 			const contracts = this.transactionContracts(transaction);
 			const abis = await this.fetchAbis(network, contracts);
 			abis.map(({account, rawAbi, abi}) => api.cachedAbis.set(account, { rawAbi, abi }));
 
-			const actions = await api.deserializeActions(transaction.actions);
-			actions.map(x => {
+			const buffer = Buffer.from(transaction.serializedTransaction, 'hex');
+			const parsed = await api.deserializeTransactionWithActions(buffer);
+			parsed.actions.map(x => {
 				x.code = x.account;
 				x.type = x.name;
 			});
 
 			payload.buf = Buffer.concat([
-				Buffer.from(network.chainId, "hex"),                             // Chain ID
-				Buffer.from(api.serializeTransaction(transaction), 'hex'),      // Transaction
-				Buffer.from(new Uint8Array(32)),                                 // Context free actions
+				Buffer.from(transaction.chainId, "hex"),         // Chain ID
+				buffer,                                          // Transaction
+				Buffer.from(new Uint8Array(32)),                 // Context free actions
 			]);
 
-			payload.transaction.parsed = Object.assign({}, transaction);
-			payload.transaction.parsed.actions = await api.serializeActions(actions);
+			payload.transaction.parsed = Object.assign({}, parsed);
+			payload.transaction.parsed.actions = await api.serializeActions(parsed.actions);
+			delete payload.transaction.abis;
 
-			return actions;
-
+			return parsed.actions;
 		} catch(e){
 			console.error(e);
 			return null;
 		}
-	}
 
-	async parseCwjs2Request(payload, network){
-		console.warn('parseCwjs2Request', payload, network);
-		const {transaction} = payload;
-
-		const api = getCwjsApi();
-
-		const contracts = this.transactionContracts(transaction);
-		const abis = await this.fetchAbis(network, contracts);
-		abis.map(({account, rawAbi, abi}) => api.cachedAbis.set(account, { rawAbi, abi }));
-
-		const buffer = Buffer.from(transaction.serializedTransaction, 'hex');
-		const parsed = await api.deserializeTransactionWithActions(buffer);
-		parsed.actions.map(x => {
-			x.code = x.account;
-			x.type = x.name;
-		});
-
-		payload.buf = Buffer.concat([
-			Buffer.from(transaction.chainId, "hex"),         // Chain ID
-			buffer,                                         // Transaction
-			Buffer.from(new Uint8Array(32)),                 // Context free actions
-		]);
-
-		payload.transaction.parsed = Object.assign({}, parsed);
-		payload.transaction.parsed.actions = await api.serializeActions(parsed.actions);
-		delete payload.transaction.abis;
-
-		return parsed.actions;
-	}
-
-	async requestParser(payload, network){
-		console.warn('requestParser', payload, network);
-		if(payload.transaction.hasOwnProperty('serializedTransaction'))
-			return this.parseCwjs2Request(payload, network);
-		else return this.parseCwjsRequest(payload, network);
 	}
 }

@@ -1,6 +1,6 @@
 {
   "name": "@walletpack/bitcoin",
-  "version": "1.0.56-alpha.5",
+  "version": "1.0.56-alpha.8",
   "description": "> TODO: description",
   "author": "GetScatter Ltd. 2019",
   "homepage": "",
@@ -15,11 +15,11 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "dependencies": {
-    "@walletpack/core": "^1.0.51-alpha.1",
+    "@walletpack/core": "^1.0.51-alpha.9",
     "bitcoinjs-lib": "^5.1.2"
   },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "2761fad9ecfe25382c8877ba19b35721a43ab665"
+  "gitHead": "5b7b3b78008fca13c2ed8496dbf3a44c025581af"
 }

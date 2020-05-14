@@ -9,7 +9,7 @@ const Network = require('../../core/lib/models/Network').default;
 const network = Network.fromJson({
 	blockchain:'cyber',
 	name:'CyberWay Mainnet',
-	host:'node-cyberway.golos.io',
+	host:'scatter.cyberway.io',
 	port:443,
 	protocol:'https',
 	chainId:'591c8aa5cade588b1ce045d26e5f2a162c52486262bd2d7abcb7fa18247e17ec',

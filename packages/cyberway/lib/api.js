@@ -15,9 +15,7 @@ function fetchJsonRpc(endpoint, method, params) {
 	return fetch(endpoint, {
 		method: 'POST',
 		headers: {'Content-type': 'application/json-rpc'},
-		body: JSON.stringify({jsonrpc: "2.0", method, params,
-			// id: 4,
-		})
+		body: JSON.stringify({jsonrpc: "2.0", method, params, id: (1<<30)*Math.random()|0})
 	}).then(r => r.json()).then(r => r.result);
 }
 
@@ -90,12 +88,10 @@ export default class LightAPI {
 		if(!networkString) return null;
 		if(!hosts[networkString]) return null;
 
-		// if(cache[account.unique()]) return parseResults(cache[account.unique()]);
-
 		return await promiseWithTimeout(8000,
 			// fetch(`${hosts[networkString]}/api/balances/${networkString}/${account.name}`).then(r => r.json()).then(res => {
 			fetchJsonRpc(hosts[networkString], "getAccountBalances", {account: account.name}).then(res => {
-				return parseResults(res.result);
+				return parseResults(res);
 			}).catch(err => {
 				console.log('err', err);
 				return null;
@@ -129,7 +125,7 @@ export default class LightAPI {
 		return await promiseWithTimeout(5000,
 			// fetch(`${hosts[networkString]}/api/key/${publicKey}`).then(r => r.json()).then(res => {
 			fetchJsonRpc(hosts[networkString], "getAccountsByAuth", {key: publicKey}).then(res => {
-				if(!res[networkString]) return null;
+				if(!res || !res[networkString]) return null;
 				const rawAccounts = res[networkString].accounts;
 				let accounts = [];
 				Object.keys(rawAccounts).map(name => {
@@ -156,12 +152,15 @@ export default class LightAPI {
 						"xhdtonx5zvnd":[{"perm":"posting","auth":{"keys":[{"weight":1,"pubkey":"GLS61TdJkH5k59LJPBvVSUC2gbfMnGZGz6qoEXfjqSXfhYttwvjWH"}],"accounts":[]},"threshold":1}],
 						"zzzzzzzzzzzz":[{"perm":"posting","auth":{"keys":[{"weight":1,"pubkey":"GLS61TdJkH5k59LJPBvVSUC2gbfMnGZGz6qoEXfjqSXfhYttwvjWH"}],"accounts":[]},"threshold":1}]
 					}}};
-				} else if (publicKey === 'GLS7Fv54EXHczc4SkTSZAGRpY96eaw4rxocCt452YatUQBFV62dt4') {
+				} else if (publicKey === 'GLS5oDRTecn2SNXbYTs3WhXFDQoRLmVXoT6GPPsPndzjaHfUXs41D') {
 					fake = {cyber:{accounts:{
 						"zxcat":[
 							{"perm":"active","auth":{
 								"keys":[{"weight":1,"pubkey":"GLS5oDRTecn2SNXbYTs3WhXFDQoRLmVXoT6GPPsPndzjaHfUXs41D"}],
 								"accounts":[]},"threshold":1}],
+					}}};
+				} else if (publicKey === 'GLS7Fv54EXHczc4SkTSZAGRpY96eaw4rxocCt452YatUQBFV62dt4') {
+					fake = {cyber:{accounts:{
 						"xhdtonx5zvnd":[
 							{"perm":"active","auth":{
 								"keys":[{"weight":1,"pubkey":"GLS7Fv54EXHczc4SkTSZAGRpY96eaw4rxocCt452YatUQBFV62dt4"}],
