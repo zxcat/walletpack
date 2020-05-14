@@ -108,6 +108,13 @@ export default class CYBER extends Plugin {
 
 	constructor(){ super(Blockchains.CYBER, PluginTypes.BLOCKCHAIN_SUPPORT); }
 
+	async createSharedSecret(publicKey, otherPublicKey, privateKey = null){
+		if (!privateKey) privateKey = await KeyPairService.publicToPrivate(publicKey);
+		if (!privateKey) return;
+
+		return ecc.PrivateKey(privateKey).getSharedSecret(otherPublicKey);
+	}
+
 	signatureProvider(accounts, reject, prompt = true){
 		console.warn('signatureProvider');
 		const isSingleAccount = accounts instanceof Account;
