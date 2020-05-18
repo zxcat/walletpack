@@ -22,21 +22,15 @@ function fetchJsonRpc(endpoint, method, params) {
 export default class LightAPI {
 
 	static async cacheEndpointsAndNetworks(){
-		// to make things simple, just hardcode for now
+		// to make things simple and reuse eosio plugin code, just hardcode compatible response for now
 		const endpoints = {
 			"api-endpoints": {
 				"https://wallet-api.cyberway.io": {
-					country: ["?"],
+					// country: ["?"],
 					continent: "ANY",
-					admin: "?@cyberway.io",
-					networks: ["cyber", "cybertest"]
+					admin: "info@cyberway.io",
+					networks: ["cyber"]
 				},
-				"http://localhost:3030": {
-					country: ["?"],
-					continent: "ANY",
-					admin: "me@zxcat.ru",
-					networks: ["cyber", "cybertest"]
-				}
 			},
 			networks: {
 				cyber: {
@@ -46,13 +40,6 @@ export default class LightAPI {
 					decimals: 4,
 					production: 1
 				},
-				cybertest: {
-					chainid: "?",
-					description: "CyberWay Testnet",
-					systoken: "CYBER",
-					decimals: 4,
-					production: 0
-				}
 			},
 			version: "0.0001"
 		};
@@ -137,60 +124,7 @@ export default class LightAPI {
 				return accounts;
 			}).catch(err => {
 				console.error('err', err);
-
-				let fake = {cyber:{accounts:{}}};
-				if (publicKey === 'GLS56NR492EjELXuQayvnUV945FDZq1CGqsGFTstCjKSxHiaEVdwb') {
-					fake = {cyber:{accounts:{"xhdtonx5zvnd":[
-						{"perm":"test","auth":{
-							"keys":[
-								{"weight":1,"pubkey":"GLS56NR492EjELXuQayvnUV945FDZq1CGqsGFTstCjKSxHiaEVdwb"},
-								{"weight":1,"pubkey":"GLS6gMPrLguKgDcJBRrE4hXVJgtd2ffvxM2YvkzDdfECWD9caMrTJ"}],
-							"accounts":[]},"threshold":2}
-					]}}};
-				} else if (publicKey === 'GLS61TdJkH5k59LJPBvVSUC2gbfMnGZGz6qoEXfjqSXfhYttwvjWH') {
-					fake = {cyber:{accounts:{
-						"xhdtonx5zvnd":[{"perm":"posting","auth":{"keys":[{"weight":1,"pubkey":"GLS61TdJkH5k59LJPBvVSUC2gbfMnGZGz6qoEXfjqSXfhYttwvjWH"}],"accounts":[]},"threshold":1}],
-						"zzzzzzzzzzzz":[{"perm":"posting","auth":{"keys":[{"weight":1,"pubkey":"GLS61TdJkH5k59LJPBvVSUC2gbfMnGZGz6qoEXfjqSXfhYttwvjWH"}],"accounts":[]},"threshold":1}]
-					}}};
-				} else if (publicKey === 'GLS5oDRTecn2SNXbYTs3WhXFDQoRLmVXoT6GPPsPndzjaHfUXs41D') {
-					fake = {cyber:{accounts:{
-						"zxcat":[
-							{"perm":"active","auth":{
-								"keys":[{"weight":1,"pubkey":"GLS5oDRTecn2SNXbYTs3WhXFDQoRLmVXoT6GPPsPndzjaHfUXs41D"}],
-								"accounts":[]},"threshold":1}],
-					}}};
-				} else if (publicKey === 'GLS7Fv54EXHczc4SkTSZAGRpY96eaw4rxocCt452YatUQBFV62dt4') {
-					fake = {cyber:{accounts:{
-						"xhdtonx5zvnd":[
-							{"perm":"active","auth":{
-								"keys":[{"weight":1,"pubkey":"GLS7Fv54EXHczc4SkTSZAGRpY96eaw4rxocCt452YatUQBFV62dt4"}],
-								"accounts":[]},"threshold":1},
-							{"perm":"prod","auth":{
-								"keys":[{"weight":1,"pubkey":"GLS7Fv54EXHczc4SkTSZAGRpY96eaw4rxocCt452YatUQBFV62dt4"}],
-								"accounts":[]},"threshold":1}],
-						"zzzzzzzzzzzz":[
-							{"perm":"active","auth":{
-								"keys":[{"weight":1,"pubkey":"GLS7Fv54EXHczc4SkTSZAGRpY96eaw4rxocCt452YatUQBFV62dt4"}],
-								"accounts":[]},"threshold":1}],
-						"kkkkkkkkkkkk":[{
-							"perm":"active","auth":{
-								"keys":[{"weight":1,"pubkey":"GLS7Fv54EXHczc4SkTSZAGRpY96eaw4rxocCt452YatUQBFV62dt4"}],
-								"accounts":[{"actor":"zzzzzzzzzzzz","permission":"active","weight":1}]},"threshold":1}],
-						"collectibles":[
-							{"perm":"active","auth":{
-								"keys":[{"weight":1,"pubkey":"GLS7Fv54EXHczc4SkTSZAGRpY96eaw4rxocCt452YatUQBFV62dt4"}],"accounts":[]},"threshold":1}]
-					}}};
-				}
-				console.log('FAKE', fake);
-				if(!fake[networkString]) return null;
-				const rawAccounts = fake[networkString].accounts;
-				let accounts = [];
-				Object.keys(rawAccounts).map(name => {
-					rawAccounts[name]
-						.filter(acc => acc.auth.keys.some(({pubkey}) => pubkey === publicKey))
-						.map(acc => accounts.push({name, authority: acc.perm}))
-				});
-				return accounts;
+				return null;
 			})
 		);
 	}
