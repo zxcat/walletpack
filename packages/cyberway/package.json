@@ -1,6 +1,6 @@
 {
   "name": "@walletpack/cyberway",
-  "version": "0.0.4-alpha.13",
+  "version": "0.0.4-alpha.16",
   "description": "> TODO: description",
   "author": "CyberWay Core. 2020",
   "homepage": "",
@@ -15,9 +15,9 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "dependencies": {
-    "@walletpack/core": "^1.0.51-alpha.10",
+    "@walletpack/core": "^1.0.51-alpha.13",
     "cyberwayjs": "^20.0.2",
     "eosjs-ecc": "^4.0.7"
   },
-  "gitHead": "5b7b3b78008fca13c2ed8496dbf3a44c025581af"
+  "gitHead": "066f89d15b2c6d9083429325cbfcf323a1ded9aa"
 }

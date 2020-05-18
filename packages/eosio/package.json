@@ -1,6 +1,6 @@
 {
   "name": "@walletpack/eosio",
-  "version": "0.0.62-alpha.9",
+  "version": "0.0.62-alpha.12",
   "description": "> TODO: description",
   "author": "GetScatter Ltd. 2019",
   "homepage": "",
@@ -15,12 +15,12 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "dependencies": {
-    "@walletpack/core": "^1.0.51-alpha.10",
+    "@walletpack/core": "^1.0.51-alpha.13",
     "eosjs": "^20.0.0",
     "eosjs-ecc": "^4.0.7"
   },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "5b7b3b78008fca13c2ed8496dbf3a44c025581af"
+  "gitHead": "066f89d15b2c6d9083429325cbfcf323a1ded9aa"
 }
